@@ -1,5 +1,4 @@
 import streamlit as st
-import json
 
 st.set_page_config(page_title="BYD Iraq Team", page_icon="🚗", layout="centered")
 
@@ -29,8 +28,14 @@ st.markdown("---")
 # --- 2. دليل الأعطال الشامل (البحث المتقدم) ---
 st.header("🛠️ دليل الأعطال الكبرى (البحث عن الكود)")
 
-# قاعدة بيانات نموذجية يمكن توسيعها لـ 1000 كود عبر ملف JSON
+# قاعدة بيانات الأعطال وتتضمن الكود النادر U0298
 faults_db = {
+    "U0298": {
+        "title": "U0298 - Lost Communication With DC/DC Converter Control Module",
+        "desc": "🚨 خطأ نادر وجسيم: انقطاع الاتصال بين عقل السيارة ومحول الطاقة (DC-DC Converter). يؤدي لتوقف شحن بطارية الـ 12V الصغرى وانطفاء الأنظمة الإلكترونية.",
+        "fix": "1. افحص فيوزات نظام الـ DC-DC والمحولات العالية الفولتية في صندوق الفيوزات الرئيسي.\n2. افحص فيشة الاتصال الخاصة بشبكة CAN-Bus الواصلة إلى وحدة المحول وتأكد من عدم وجود كلس أو رطوبة.\n3. قياس فولتية بطارية الـ 12V (إذا كانت أقل من 10V يجب شحنها خارجياً أولاً لإعادة الاتصال).\n4. إذا استمرت المشكلة، يتطلب الأمر إعادة برمجة وحدة التوزيع (PDU) أو فحص المحول عند مركز صيانة متقدم.",
+        "video": "https://www.youtube.com/watch?v=2eO712Pq6yU"
+    },
     "P0A80": {
         "title": "P0A80 - Replace High Voltage Battery Pack",
         "desc": "ضعف أو تلف في خلايا حزمة بطارية الهجين/الضغط العالي.",
@@ -51,19 +56,19 @@ faults_db = {
     }
 }
 
-search_query = st.text_input("🔍 اكتب رمز العطل هنا (مثال: P0A80, TPMS, P0101):", "").strip().upper()
+search_query = st.text_input("🔍 اكتب رمز العطل هنا (جرب كتابة U0298 أو P0A80):", "").strip().upper()
 
 if search_query:
     if search_query in faults_db:
         data = faults_db[search_query]
         st.subheader(data["title"])
-        st.error(f"**الوصف:** {data['desc']}")
+        st.error(f"**الوصف:**\n{data['desc']}")
         st.warning(f"**طريقة التصليح:**\n{data['fix']}")
         if data["video"]:
             st.write("🎥 **فيديو توضيحي للحل:**")
             st.video(data["video"])
     else:
-        st.info(f"لم نجد الكود ({search_query}) مسجلاً. يمكنك البحث عنه تلقائياً في يوتيوب عبر الرابط:")
+        st.info(f"لم نجد الكود ({search_query}) مسجلاً حالياً.")
         st.markdown(f"[🔍 اضغط هنا للبحث عن فيديو تصليح {search_query} على يوتيوب](https://www.youtube.com/results?search_query=BYD+{search_query}+repair)")
 else:
     st.write("👈 أدخل رمز العطل في مربع البحث أعلاه لمشاهدة التفاصيل والفيديو.")
