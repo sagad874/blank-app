@@ -297,69 +297,64 @@ with c:
 
 
 
+def web_search(q):
+    url="https://html.duckduckgo.com/html/?q="+quote(q)
+    h={"User-Agent":"Mozilla/5.0"}
+    r=requests.get(url,headers=h,timeout=10)
+    s=BeautifulSoup(r.text,"html.parser")
+    return [(x.select_one(".result__title").get_text(" ",strip=True),
+             x.select_one(".result__snippet").get_text(" ",strip=True),
+             x.select_one(".result__title")["href"])
+            for x in s.select(".result")[:5] if x.select_one(".result__title")]
 
-        # =========================================================
-# 🚗 المرحلة 3 — سيارات BYD
-# =========================================================
+def car_info(model):
+    qs=[
+        f"{model} BYD specifications battery range charging",
+        f"{model} BYD battery capacity charging power",
+        f"{model} BYD 12V battery HV system"
+    ]
+    out=[]
+    for q in qs:
+        try: out+=web_search(q)
+        except: pass
+    return out
 
-MODELS={
-"BYD ATTO 3":       {"type":"EV","battery":"—","range":"—","charge":"—"},
-"BYD SEAL":         {"type":"EV","battery":"—","range":"—","charge":"—"},
-"BYD HAN":          {"type":"EV","battery":"—","range":"—","charge":"—"},
-"BYD SEALION 7":    {"type":"EV","battery":"—","range":"—","charge":"—"},
-"BYD SHARK 6":      {"type":"PHEV","battery":"—","range":"—","charge":"—"},
-"BYD SEAL 7 DM-i":  {"type":"PHEV","battery":"—","range":"—","charge":"—"},
-"BYD QIN PLUS DM-i":{"type":"PHEV","battery":"—","range":"—","charge":"—"},
-"BYD SONG PLUS DM-i":{"type":"PHEV","battery":"—","range":"—","charge":"—"}
-}
+with st.expander("🚗 معلومات السيارة",expanded=False):
+    model=st.text_input(
+        "✍️ اكتب اسم السيارة:",
+        placeholder="مثال: BYD Seal Premium 2025"
+    ).strip()
 
-with st.expander("🚗 معلومات سيارات BYD",expanded=False):
+    if st.button("🔎 بحث عن مواصفات السيارة",use_container_width=True) and model:
+        with st.spinner("🔎 جاري البحث بالإنترنت..."):
+            results=car_info(model)
 
-    model=st.selectbox(
-        "اختر الموديل:",
-        ["اختار الموديل..."]+list(MODELS)
-    )
+        if results:
+            st.markdown(f"## 🚗 {model}")
 
-    if model!="اختار الموديل...":
+            st.markdown("### 🔋 البطارية")
+            st.info("المعلومات المستخرجة من نتائج البحث:")
+            for t,s,u in results:
+                if any(x in (t+s).lower() for x in ["battery","kwh","بطارية","battery capacity"]):
+                    st.write("• "+s)
 
-        x=MODELS[model]
+            st.markdown("### ⚡ الشحن")
+            for t,s,u in results:
+                if any(x in (t+s).lower() for x in ["charging","charge","kw","شحن"]):
+                    st.write("• "+s)
 
-        st.markdown(f"## 🚗 {model}")
+            st.markdown("### 🛣️ المدى والأداء")
+            for t,s,u in results:
+                if any(x in (t+s).lower() for x in ["range","km","horsepower","power","مدى"]):
+                    st.write("• "+s)
 
-        a,b=st.columns(2)
+            st.markdown("### 🔌 نظام 12V و HV")
+            for t,s,u in results:
+                if any(x in (t+s).lower() for x in ["12v","high voltage","hv","voltage"]):
+                    st.write("• "+s)
 
-        with a:
-            st.info(f"⚡ **النظام:** {x['type']}")
-            st.info(f"🔋 **البطارية:** {x['battery']}")
-
-        with b:
-            st.info(f"🛣️ **المدى:** {x['range']}")
-            st.info(f"⚡ **الشحن:** {x['charge']}")
-
-        st.markdown("---")
-
-        st.markdown("### 🔋 البطارية")
-        st.write(
-            "نوع البطارية وسعتها ومعلوماتها التفصيلية تعتمد على "
-            "السنة والفئة والسوق، لذلك تُملأ من مواصفات الموديل المعتمد."
-        )
-
-        st.markdown("### ⚡ الشحن")
-        st.write(
-            "تختلف قدرة الشحن ووقت الشحن حسب الفئة والشاحن "
-            "ودرجة الحرارة وحالة البطارية."
-        )
-
-        st.markdown("### 🔌 نظام 12V")
-        st.write(
-            "بطارية 12V مسؤولة عن الأنظمة منخفضة الجهد، "
-            "وتفاصيلها تختلف حسب الموديل والفئة."
-        )
-
-        st.markdown("### ⚠️ نظام HV")
-        st.warning(
-            "منظومة الجهد العالي تتطلب إجراءات السلامة ومواصفات "
-            "BYD الخاصة بالموديل. لا يتم التعامل مع مكونات HV "
-            "المكشوفة بدون تدريب وتجهيز مناسب."
-        )
-    
+            st.markdown("### 🌐 المصادر")
+            for t,s,u in results:
+                st.markdown(f"- [{t}]({u})")
+        else:
+            st.error("❌ ما حصلت نتائج. جرّب كتابة اسم الموديل بشكل أوضح.")
