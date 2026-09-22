@@ -277,7 +277,7 @@ st.markdown("### 📱 تواصل معنا")
 a,b=st.columns(2)
 
 with a:
-    st.link_button("🎵 TikTok","رابط_التك_توك",use_container_width=True)
+    st.link_button("🎵 TikTok","https://www.tiktok.com/@iraq_byd?_r=1&_t=ZS-99vriy2B3wd",=True)
 
 with b:
     st.link_button("💬 WhatsApp","رابط_الواتساب",use_container_width=True)
