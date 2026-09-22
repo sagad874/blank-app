@@ -296,8 +296,8 @@ with c:
     )
 
 
-with st.expander("🚗 معلومات السيارة"
-# 🚗 بحث معلومات السيارة
+
+# 🚗 معلومات السيارة
 def get_car(name):
     try:
         r=requests.get(
@@ -340,8 +340,8 @@ def get_car(name):
 
         text=pages[0]["revisions"][0]["slots"]["main"]["content"]
 
-        def find(pattern):
-            m=re.search(pattern,text,re.I)
+        def find(p):
+            m=re.search(p,text,re.I)
             return m.group(1).strip() if m else "غير متوفر"
 
         return {
@@ -356,3 +356,88 @@ def get_car(name):
 
     except:
         return None
+
+
+with st.expander("🚗 معلومات السيارة",expanded=False):
+
+    st.markdown("### 🔎 البحث عن سيارة")
+
+    model=st.text_input(
+        "اكتب اسم الموديل:",
+        placeholder="مثال: BYD Seal"
+    )
+
+    search_car=st.button(
+        "🔍 بحث عن المواصفات",
+        use_container_width=True
+    )
+
+    if search_car:
+
+        if not model.strip():
+            st.warning("⚠️ اكتب اسم السيارة أولاً.")
+
+        else:
+            with st.spinner("🌐 جاري البحث..."):
+
+                car=get_car(model.strip())
+
+            if car:
+
+                st.success(f"تم العثور على: {car['name']}")
+
+                st.markdown("---")
+
+                a,b=st.columns(2)
+
+                with a:
+                    st.info("🔋 البطارية")
+                    st.write(car["battery"])
+
+                    st.info("🛣️ المدى")
+                    st.write(car["range"])
+
+                    st.info("⚙️ المحرك")
+                    st.write(car["motor"])
+
+                with b:
+                    st.info("🏎️ القوة")
+                    st.write(car["power"])
+
+                    st.info("⚖️ الوزن")
+                    st.write(car["weight"])
+
+                st.markdown("---")
+
+                st.markdown("### 🔋 البطارية")
+                st.write(car["battery"])
+
+                st.markdown("### ⚡ الشحن")
+                st.write("بيانات الشحن التفصيلية غير متوفرة حالياً من مصدر Wikipedia.")
+
+                st.markdown("### 🛣️ المدى")
+                st.write(car["range"])
+
+                st.markdown("### ⚙️ المحرك والأداء")
+                st.write(car["motor"])
+                st.write(car["power"])
+
+                st.markdown("### ⚠️ HV")
+                st.warning(
+                    "معلومات HV تختلف حسب السنة والفئة والسوق. "
+                    "لا تعتمد على هذه البيانات كإجراء صيانة."
+                )
+
+                st.markdown("### 🌐 المصدر")
+
+                st.link_button(
+                    "فتح المصدر",
+                    car["url"],
+                    use_container_width=True
+                )
+
+            else:
+                st.error(
+                    "❌ ما حصلنا معلومات للسيارة. "
+                    "جرّب مثلاً: BYD Seal"
+                )
