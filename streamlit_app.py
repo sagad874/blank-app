@@ -298,16 +298,8 @@ with c:
 
 
 # 🚗 بحث معلومات السيارة
-        # 🚗 معلومات السيارة من الإنترنت
-import requests
-from bs4 import BeautifulSoup
-from urllib.parse import quote
-
 def get_car(name):
-    H={"User-Agent":"BYD-Iraq-Workshop/1.0"}
-
     try:
-        # البحث
         r=requests.get(
             "https://en.wikipedia.org/w/api.php",
             params={
@@ -317,138 +309,50 @@ def get_car(name):
                 "format":"json",
                 "srlimit":5
             },
-            headers=H,timeout=10
+            headers={"User-Agent":"BYD-Iraq-Workshop/1.0"},
+            timeout=10
         )
 
-        data=r.json()
-        hits=data.get("query",{}).get("search",[])
-
+        hits=r.json().get("query",{}).get("search",[])
         if not hits:
             return None
 
-        # نبحث عن نتيجة BYD الأقرب
         title=hits[0]["title"]
-        for x in hits:
-            if "BYD" in x["title"] or "Seal" in x["title"]:
-                title=x["title"]
-                break
 
-        # جلب الصفحة
         r=requests.get(
             "https://en.wikipedia.org/w/api.php",
             params={
-                "action":"parse",
-                "page":title,
-                "prop":"text",
-                "format":"json"
+                "action":"query",
+                "prop":"revisions",
+                "rvprop":"content",
+                "rvslots":"main",
+                "titles":title,
+                "format":"json",
+                "formatversion":2
             },
-            headers=H,timeout=10
+            headers={"User-Agent":"BYD-Iraq-Workshop/1.0"},
+            timeout=10
         )
 
-        data=r.json()
-        html=data.get("parse",{}).get("text",{}).get("*","")
-
-        if not html:
+        pages=r.json().get("query",{}).get("pages",[])
+        if not pages:
             return None
 
-        s=BeautifulSoup(html,"html.parser")
+        text=pages[0]["revisions"][0]["slots"]["main"]["content"]
 
-        info={}
-
-        for tr in s.select("table.infobox tr"):
-            c=tr.find_all(["th","td"])
-            if len(c)>=2:
-                k=c[0].get_text(" ",strip=True)
-                v=c[1].get_text(" ",strip=True)
-                info[k]=v
-
-        def val(words):
-            for k,v in info.items():
-                if any(w.lower() in k.lower() for w in words):
-                    return v
-            return "غير متوفر بالمصدر"
+        def find(pattern):
+            m=re.search(pattern,text,re.I)
+            return m.group(1).strip() if m else "غير متوفر"
 
         return {
             "name":title,
-            "type":val(["Class","Body style"]),
-            "battery":val(["Battery"]),
-            "range":val(["Electric Range","Range"]),
-            "charge":val(["Charging"]),
-            "power":val(["Powerout","Power"]),
-            "motor":val(["Motor"]),
-            "weight":val(["Weight"]),
-            "dimensions":val(["Length","Dimensions"]),
-            "url":"https://en.wikipedia.org/wiki/"+quote(title.replace(" ","_"))
+            "battery":find(r"\|\s*battery\s*=\s*([^\n]+)"),
+            "range":find(r"\|\s*range\s*=\s*([^\n]+)"),
+            "power":find(r"\|\s*power\s*=\s*([^\n]+)"),
+            "motor":find(r"\|\s*motor\s*=\s*([^\n]+)"),
+            "weight":find(r"\|\s*weight\s*=\s*([^\n]+)"),
+            "url":"https://en.wikipedia.org/wiki/"+title.replace(" ","_")
         }
 
-    except Exception as e:
+    except:
         return None
-
-
-with st.expander("🚗 معلومات السيارة",expanded=False):
-
-    model=st.text_input(
-        "✍️ اكتب اسم سيارة BYD:",
-        placeholder="مثال: BYD Seal"
-    ).strip()
-
-    if st.button(
-        "🔎 بحث عن السيارة",
-        use_container_width=True,
-        type="primary"
-    ) and model:
-
-        with st.spinner("🌐 جاري البحث..."):
-            car=get_car(model)
-
-        if car:
-
-            st.markdown(f"## 🚗 {car['name']}")
-
-            a,b=st.columns(2)
-
-            with a:
-                st.info(f"⚡ **النظام:** {car['type']}")
-                st.info(f"🔋 **البطارية:** {car['battery']}")
-                st.info(f"🛣️ **المدى:** {car['range']}")
-                st.info(f"⚡ **الشحن:** {car['charge']}")
-
-            with b:
-                st.info(f"⚙️ **المحرك:** {car['motor']}")
-                st.info(f"🏎️ **القوة:** {car['power']}")
-                st.info(f"⚖️ **الوزن:** {car['weight']}")
-                st.info(f"📏 **الأبعاد:** {car['dimensions']}")
-
-            st.markdown("---")
-
-            st.markdown("### 🔋 البطارية")
-            st.write(car["battery"])
-
-            st.markdown("### ⚡ الشحن")
-            st.write(car["charge"])
-
-            st.markdown("### 🛣️ المدى")
-            st.write(car["range"])
-
-            st.markdown("### ⚙️ المحرك والأداء")
-            st.write(f"المحرك: {car['motor']}")
-            st.write(f"القوة: {car['power']}")
-
-            st.markdown("### ⚠️ HV")
-            st.warning(
-                "مواصفات منظومة HV تختلف حسب السنة والفئة والسوق. "
-                "لا تعتمد على هذه الصفحة كإجراء صيانة HV."
-            )
-
-            st.markdown("### 🌐 المصدر")
-            st.link_button(
-                "فتح المصدر",
-                car["url"],
-                use_container_width=True
-            )
-
-        else:
-            st.error(
-                "❌ ما قدرنا نجلب معلومات السيارة. "
-                "تأكد من اتصال الإنترنت وحاول مرة ثانية."
-            )
