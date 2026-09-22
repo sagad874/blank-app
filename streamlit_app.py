@@ -281,4 +281,8 @@ with a:
 
 with b:
     st.link_button("💬 WhatsApp","رابط_الواتساب",use_container_width=True)
+
+
+    with c:
+st.link_button("📘 Facebook","https://www.facebook.com/share/1Ps1RPakdP/",use_container_width=True)
     
