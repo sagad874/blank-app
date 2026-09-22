@@ -1,593 +1,539 @@
 import streamlit as st
 
-# =========================================================
-# BYD IRAQ SMART WORKSHOP V2
-# Interactive Diagnostic Decision Tree
-# =========================================================
-
 st.set_page_config(
-    page_title="BYD Iraq Team - الورشة الذكية",
+    page_title="BYD Iraq | الورشة الذكية",
     page_icon="🚗",
-    layout="centered",
-    initial_sidebar_state="collapsed"
+    layout="centered"
 )
 
-# =========================================================
-# CSS
-# =========================================================
-
-st.markdown("""
-<style>
-
-html, body, [class*="css"] {
-    font-family: Arial, sans-serif;
-}
-
-.block-container {
-    max-width: 1000px;
-    padding-top: 2rem;
-    padding-bottom: 4rem;
-}
-
-/* RTL */
-.main-title {
-    direction: rtl;
-    text-align: center;
-    font-size: 32px;
-    font-weight: 800;
-}
-
-.subtitle {
-    direction: rtl;
-    text-align: center;
-    opacity: 0.75;
-    font-size: 16px;
-    margin-bottom: 25px;
-}
-
-/* Step number is deliberately separated */
-.step-number {
-    direction: ltr;
-    text-align: left;
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    opacity: 0.65;
-    margin-bottom: 8px;
-}
-
-/* Arabic content */
-.arabic-text {
-    direction: rtl;
-    text-align: right;
-    font-size: 20px;
-    line-height: 1.8;
-    font-weight: 600;
-}
-
-/* English content */
-.english-text {
-    direction: ltr;
-    text-align: left;
-    font-size: 14px;
-    opacity: 0.75;
-    line-height: 1.5;
-}
-
-/* Code badge */
-.code-badge {
-    direction: ltr;
-    text-align: center;
-    font-family: monospace;
-    font-size: 24px;
-    font-weight: 800;
-    padding: 12px;
-    border-radius: 12px;
-    background: rgba(100,100,100,0.15);
-}
-
-/* Result cards */
-.result-good {
-    direction: rtl;
-    text-align: right;
-    padding: 18px;
-    border-radius: 12px;
-    background: rgba(40, 180, 90, 0.15);
-    border: 1px solid rgba(40, 180, 90, 0.35);
-}
-
-.result-warning {
-    direction: rtl;
-    text-align: right;
-    padding: 18px;
-    border-radius: 12px;
-    background: rgba(240, 170, 30, 0.15);
-    border: 1px solid rgba(240, 170, 30, 0.35);
-}
-
-.result-danger {
-    direction: rtl;
-    text-align: right;
-    padding: 18px;
-    border-radius: 12px;
-    background: rgba(220, 60, 60, 0.15);
-    border: 1px solid rgba(220, 60, 60, 0.35);
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-
-# =========================================================
-# HEADER
-# =========================================================
-
-st.markdown(
-    '<div class="main-title">🚗 الورشة الذكية لفريق BYD العراق</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    '<div class="subtitle">'
-    'نظام تشخيص تفاعلي — لا يعطيك الخطوة التالية إلا بعد تحديد نتيجة الفحص الحالية'
-    '</div>',
-    unsafe_allow_html=True
-)
-
+st.title("🚗 الورشة الذكية | BYD Iraq")
+st.caption("نظام تشخيص تفاعلي: الكود → الفحص → النتيجة → الفحص التالي")
 st.markdown("---")
 
 
-# =========================================================
-# VEHICLE INFORMATION
-# =========================================================
+# ═══════════════════════════════════════════════
+# أدوات الواجهة
+# ═══════════════════════════════════════════════
 
-st.subheader("🚘 معلومات السيارة")
-
-col1, col2 = st.columns(2)
-
-with col1:
-    powertrain = st.selectbox(
-        "نوع منظومة السيارة",
-        [
-            "EV — كهربائية بالكامل",
-            "DM-i / DM-p — هجينة",
-            "ICE — محرك احتراق",
-            "غير متأكد"
-        ]
+def step(no, ar, en=""):
+    st.markdown(
+        f"""
+        <div style="font-size:24px;font-weight:bold;
+        padding:8px 14px;border-radius:10px;
+        background:#222;color:white;text-align:center">
+        STEP {no}
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
-with col2:
-    model = st.text_input(
-        "موديل BYD",
-        placeholder="مثال: Atto 3 / Seal / Song Plus..."
+    st.markdown(f"### 🔧 {ar}")
+
+    if en:
+        st.code(en, language="text")
+
+
+def finish(title, text, color="green"):
+    if color == "red":
+        st.error(f"🛑 {title}\n\n{text}")
+    elif color == "yellow":
+        st.warning(f"⚠️ {title}\n\n{text}")
+    else:
+        st.success(f"✅ {title}\n\n{text}")
+
+
+# ═══════════════════════════════════════════════
+# مسارات التشخيص
+# ═══════════════════════════════════════════════
+
+def diagnose(code):
+
+    # ───────────────────────────────────────────
+    # P0AA6
+    # ───────────────────────────────────────────
+
+    if code == "P0AA6":
+
+        st.subheader("P0AA6 — HV Isolation Fault")
+
+        st.error(
+            "🚨 عطل متعلق بعزل منظومة الجهد العالي. "
+            "لا يتم فتح أو لمس مكونات HV إلا بواسطة فني مؤهل "
+            "وبحسب إجراء BYD الخاص بالموديل."
+        )
+
+        step(
+            1,
+            "هل توجد أكواد جهد عالٍ أخرى مسجلة مع P0AA6؟",
+            "Are there additional HV-related DTCs?"
+        )
+
+        a = st.radio(
+            "النتيجة:",
+            ["نعم", "لا"],
+            key="p0aa6_1"
+        )
+
+        if a == "نعم":
+            finish(
+                "ابدأ بالكود المصاحب",
+                "الكود المصاحب قد يحدد الجزء أو الوحدة المسؤولة. "
+                "لا تعتمد على P0AA6 وحده لتحديد القطعة."
+            )
+            return
+
+        step(
+            2,
+            "هل ظهر العطل مباشرة بعد حادث، ماء، غسيل قوي، أو صيانة؟",
+            "Did the fault appear after water exposure, impact, or service?"
+        )
+
+        b = st.radio(
+            "النتيجة:",
+            ["نعم", "لا"],
+            key="p0aa6_2"
+        )
+
+        if b == "نعم":
+            finish(
+                "مسار فحص البيئة/التوصيلات",
+                "افحص آثار الرطوبة أو الضرر الخارجي بواسطة فني مؤهل "
+                "واتبع مخطط BYD للموديل."
+            )
+            return
+
+        step(
+            3,
+            "هل يعود P0AA6 مباشرة بعد مسحه؟",
+            "Does P0AA6 return immediately after clearing?"
+        )
+
+        c = st.radio(
+            "النتيجة:",
+            ["نعم", "لا"],
+            key="p0aa6_3"
+        )
+
+        if c == "نعم":
+            finish(
+                "العطل مستمر",
+                "وجود العطل مباشرة بعد المسح يشير إلى أن المشكلة ما زالت موجودة. "
+                "يلزم اختبار العزل حسب إجراء المصنع."
+            )
+        else:
+            finish(
+                "العطل متقطع",
+                "راقب عودة الكود وسجّل ظروف ظهوره. "
+                "لا تعتبر اختفاء الكود دليلاً على انتهاء المشكلة."
+            )
+
+        return
+
+
+    # ───────────────────────────────────────────
+    # U0298
+    # ───────────────────────────────────────────
+
+    if code == "U0298":
+
+        st.subheader("U0298 — Lost Communication With DC/DC Converter")
+
+        step(
+            1,
+            "هل توجد أكواد U أو أكواد مرتبطة بـ 12V؟",
+            "Are there additional communication or 12V-related DTCs?"
+        )
+
+        a = st.radio(
+            "النتيجة:",
+            ["نعم", "لا"],
+            key="u0298_1"
+        )
+
+        if a == "نعم":
+            finish(
+                "ابدأ بالأكواد المصاحبة",
+                "وجود أكواد اتصال أو تغذية إضافية قد يغيّر مسار التشخيص."
+            )
+            return
+
+        step(
+            2,
+            "هل جهد بطارية 12V ضمن المجال الطبيعي حسب مواصفات السيارة؟",
+            "Is the 12V battery voltage within specification?"
+        )
+
+        b = st.radio(
+            "النتيجة:",
+            ["نعم", "لا"],
+            key="u0298_2"
+        )
+
+        if b == "لا":
+            finish(
+                "ابدأ بمنظومة 12V",
+                "يجب معالجة مشكلة بطارية 12V أو تغذيتها أولاً، "
+                "ثم إعادة فحص الأكواد."
+            )
+            return
+
+        step(
+            3,
+            "هل يوجد فقدان تغذية أو فيوز مرتبط بالـ DC/DC؟",
+            "Is there a power supply or fuse issue related to the DC/DC system?"
+        )
+
+        c = st.radio(
+            "النتيجة:",
+            ["نعم", "لا"],
+            key="u0298_3"
+        )
+
+        if c == "نعم":
+            finish(
+                "افحص دائرة التغذية",
+                "شخّص دائرة التغذية والفيوز حسب مخطط السيارة."
+            )
+            return
+
+        step(
+            4,
+            "هل الاتصال مع وحدة DC/DC مفقود بينما التغذية سليمة؟",
+            "Is communication with the DC/DC unit lost while power is present?"
+        )
+
+        d = st.radio(
+            "النتيجة:",
+            ["نعم", "لا"],
+            key="u0298_4"
+        )
+
+        if d == "نعم":
+            finish(
+                "مسار الاتصال",
+                "انتقل إلى فحص CAN والتوصيلات الخاصة بالوحدة "
+                "وفق مخطط BYD."
+            )
+        else:
+            finish(
+                "يلزم تشخيص أعمق",
+                "افحص الأكواد الحالية وبيانات Live Data ومخطط النظام "
+                "قبل استبدال أي قطعة."
+            )
+
+        return
+
+
+    # ───────────────────────────────────────────
+    # P0100 / P0101 / P0102 / P0103
+    # ───────────────────────────────────────────
+
+    if code in ["P0100", "P0101", "P0102", "P0103"]:
+
+        st.subheader(f"{code} — MAF Sensor")
+
+        step(
+            1,
+            "هل توجد أكواد أخرى مرتبطة بالمحرك أو الحساسات؟",
+            "Are there additional engine or sensor-related DTCs?"
+        )
+
+        a = st.radio(
+            "النتيجة:",
+            ["نعم", "لا"],
+            key=f"{code}_1"
+        )
+
+        if a == "نعم":
+            finish(
+                "افحص الأكواد المصاحبة أولاً",
+                "الأكواد المصاحبة قد تكون سبباً أو نتيجة للكود الحالي."
+            )
+            return
+
+        step(
+            2,
+            "هل فيشة حساس MAF متصلة وسليمة بصرياً؟",
+            "Is the MAF connector physically connected and undamaged?"
+        )
+
+        b = st.radio(
+            "النتيجة:",
+            ["نعم", "لا"],
+            key=f"{code}_2"
+        )
+
+        if b == "لا":
+            finish(
+                "ابدأ بالتوصيل",
+                "أصلح مشكلة التوصيل ثم أعد الفحص."
+            )
+            return
+
+        step(
+            3,
+            "هل قيمة MAF في Live Data منطقية مقارنة بحالة المحرك؟",
+            "Is the MAF Live Data plausible for the current engine state?"
+        )
+
+        c = st.radio(
+            "النتيجة:",
+            ["نعم", "لا", "غير متأكد"],
+            key=f"{code}_3"
+        )
+
+        if c == "لا":
+            finish(
+                "مسار حساس MAF",
+                "افحص التغذية والأرضي والإشارة والأسلاك حسب مخطط السيارة "
+                "قبل استبدال الحساس."
+            )
+        elif c == "نعم":
+            finish(
+                "ابحث عن سبب آخر",
+                "إذا كانت قراءة MAF منطقية، فلا تستبدل الحساس لمجرد وجود الكود."
+            )
+        else:
+            finish(
+                "نحتاج Live Data",
+                "افتح بيانات Live Data وسجّل قراءة MAF ثم قارنها بمواصفات BYD."
+            )
+
+        return
+
+
+    # ───────────────────────────────────────────
+    # أكواد الاتصال U
+    # ───────────────────────────────────────────
+
+    if code.startswith("U"):
+
+        st.subheader(f"{code} — Communication Fault")
+
+        step(
+            1,
+            "هل توجد أكواد U أخرى في نفس الفحص؟",
+            "Are there other communication DTCs?"
+        )
+
+        a = st.radio(
+            "النتيجة:",
+            ["نعم", "لا"],
+            key=f"{code}_1"
+        )
+
+        if a == "نعم":
+            finish(
+                "افحص شبكة الاتصال أولاً",
+                "وجود عدة وحدات تفقد الاتصال قد يشير إلى مشكلة مشتركة "
+                "في التغذية أو شبكة الاتصال."
+            )
+            return
+
+        step(
+            2,
+            "هل الوحدة المتأثرة تعمل ولديها تغذية كهربائية صحيحة؟",
+            "Does the affected module have proper power and ground?"
+        )
+
+        b = st.radio(
+            "النتيجة:",
+            ["نعم", "لا", "غير متأكد"],
+            key=f"{code}_2"
+        )
+
+        if b == "لا":
+            finish(
+                "مسار التغذية",
+                "ابدأ بفحص التغذية والأرضي والفيوزات حسب مخطط المصنع."
+            )
+            return
+
+        if b == "غير متأكد":
+            finish(
+                "تحقق من التغذية",
+                "لا تنتقل إلى استبدال الوحدة قبل التأكد من Power/Ground."
+            )
+            return
+
+        step(
+            3,
+            "هل الاتصال مع الوحدة يعود ويختفي؟",
+            "Is communication intermittent?"
+        )
+
+        c = st.radio(
+            "النتيجة:",
+            ["نعم", "لا"],
+            key=f"{code}_3"
+        )
+
+        if c == "نعم":
+            finish(
+                "مسار اتصال متقطع",
+                "افحص التوصيلات والأسلاك وشبكة CAN حسب مخطط السيارة."
+            )
+        else:
+            finish(
+                "مسار فقدان اتصال ثابت",
+                "انتقل إلى فحص CAN والتغذية والوحدة نفسها وفق إجراء BYD."
+            )
+
+        return
+
+
+    # ───────────────────────────────────────────
+    # بقية الأكواد
+    # ───────────────────────────────────────────
+
+    step(
+        1,
+        "هل يوجد كود مصاحب لنفس النظام؟",
+        "Is there another DTC related to the same system?"
     )
 
-st.markdown("---")
+    a = st.radio(
+        "النتيجة:",
+        ["نعم", "لا"],
+        key=f"{code}_generic_1"
+    )
+
+    if a == "نعم":
+        finish(
+            "ابدأ بالكود المصاحب",
+            "الكود المصاحب قد يحدد الجزء المسؤول بشكل أدق."
+        )
+        return
+
+    step(
+        2,
+        "هل المشكلة ظاهرة حالياً أم أن الكود تاريخي فقط؟",
+        "Is the fault currently present or only stored/history?"
+    )
+
+    b = st.radio(
+        "النتيجة:",
+        ["ظاهرة حالياً", "تاريخية فقط"],
+        key=f"{code}_generic_2"
+    )
+
+    if b == "تاريخية فقط":
+        finish(
+            "راقب العطل",
+            "امسح الكود فقط وفق الإجراء المناسب ثم راقب عودته."
+        )
+        return
+
+    step(
+        3,
+        "هل التوصيلات والفيوزات المرتبطة بالنظام سليمة؟",
+        "Are the related connectors and fuses OK?"
+    )
+
+    c = st.radio(
+        "النتيجة:",
+        ["نعم", "لا"],
+        key=f"{code}_generic_3"
+    )
+
+    if c == "لا":
+        finish(
+            "ابدأ بالتوصيلات والتغذية",
+            "أصلح المشكلة ثم أعد الفحص قبل استبدال أي مكون."
+        )
+    else:
+        finish(
+            "انتقل إلى الاختبار المتخصص",
+            "استخدم Live Data أو اختبار الوحدة أو مخطط المصنع "
+            "بحسب نوع الكود."
+        )
 
 
-# =========================================================
-# DTC DATABASE
-# =========================================================
+# ═══════════════════════════════════════════════
+# قاعدة الأكواد
+# ═══════════════════════════════════════════════
 
-CODES = {
-
-    # ---------------- P CODES ----------------
-
-    "P0100": {
-        "title": "عطل دائرة حساس تدفق الهواء",
-        "english": "Mass Air Flow Sensor Circuit",
-        "system": "MAF",
-        "risk": "MEDIUM",
-        "powertrain": "ICE",
-        "focus": "إشارة حساس تدفق الهواء",
-    },
-
-    "P0101": {
-        "title": "أداء حساس تدفق الهواء خارج النطاق",
-        "english": "Mass Air Flow Range / Performance",
-        "system": "MAF",
-        "risk": "MEDIUM",
-        "powertrain": "ICE",
-        "focus": "منطق قراءة MAF مقارنة بحالة المحرك",
-    },
-
-    "P0102": {
-        "title": "إشارة حساس تدفق الهواء منخفضة",
-        "english": "Mass Air Flow Circuit Low",
-        "system": "MAF",
-        "risk": "MEDIUM",
-        "powertrain": "ICE",
-        "focus": "انخفاض إشارة MAF",
-    },
-
-    "P0103": {
-        "title": "إشارة حساس تدفق الهواء مرتفعة",
-        "english": "Mass Air Flow Circuit High",
-        "system": "MAF",
-        "risk": "MEDIUM",
-        "powertrain": "ICE",
-        "focus": "ارتفاع إشارة MAF",
-    },
-
-    "P0110": {
-        "title": "دائرة حساس حرارة هواء السحب",
-        "english": "Intake Air Temperature Sensor Circuit",
-        "system": "IAT",
-        "risk": "MEDIUM",
-        "powertrain": "ICE",
-        "focus": "إشارة حرارة هواء السحب",
-    },
-
-    "P0115": {
-        "title": "دائرة حساس حرارة سائل التبريد",
-        "english": "Engine Coolant Temperature Sensor Circuit",
-        "system": "ECT",
-        "risk": "MEDIUM",
-        "powertrain": "ICE",
-        "focus": "إشارة حرارة سائل التبريد",
-    },
-
-    "P0120": {
-        "title": "دائرة حساس وضع الخانق / دعسة التسارع",
-        "english": "Throttle / Accelerator Position Sensor Circuit",
-        "system": "TPS / APP",
-        "risk": "HIGH",
-        "powertrain": "ICE / Hybrid",
-        "focus": "إشارة موضع الدعسة أو الخانق",
-    },
-
-    "P0130": {
-        "title": "دائرة حساس الأكسجين",
-        "english": "Oxygen Sensor Circuit",
-        "system": "O2",
-        "risk": "MEDIUM",
-        "powertrain": "ICE / Hybrid",
-        "focus": "إشارة حساس الأكسجين",
-    },
-
-    "P0300": {
-        "title": "تفتفة عشوائية متعددة الأسطوانات",
-        "english": "Random / Multiple Cylinder Misfire",
-        "system": "Misfire",
-        "risk": "HIGH",
-        "powertrain": "ICE / Hybrid",
-        "focus": "تحديد ما إذا كان التفتفة حقيقية وحالية",
-    },
-
-    "P0301": {
-        "title": "تفتفة في الأسطوانة رقم 1",
-        "english": "Cylinder 1 Misfire",
-        "system": "Misfire",
-        "risk": "HIGH",
-        "powertrain": "ICE / Hybrid",
-        "focus": "الأسطوانة 1",
-    },
-
-    "P0302": {
-        "title": "تفتفة في الأسطوانة رقم 2",
-        "english": "Cylinder 2 Misfire",
-        "system": "Misfire",
-        "risk": "HIGH",
-        "powertrain": "ICE / Hybrid",
-        "focus": "الأسطوانة 2",
-    },
-
-    "P0303": {
-        "title": "تفتفة في الأسطوانة رقم 3",
-        "english": "Cylinder 3 Misfire",
-        "system": "Misfire",
-        "risk": "HIGH",
-        "powertrain": "ICE / Hybrid",
-        "focus": "الأسطوانة 3",
-    },
-
-    "P0304": {
-        "title": "تفتفة في الأسطوانة رقم 4",
-        "english": "Cylinder 4 Misfire",
-        "system": "Misfire",
-        "risk": "HIGH",
-        "powertrain": "ICE / Hybrid",
-        "focus": "الأسطوانة 4",
-    },
-
-    "P0420": {
-        "title": "كفاءة المحول الحفاز منخفضة",
-        "english": "Catalyst System Efficiency Below Threshold",
-        "system": "Catalyst",
-        "risk": "MEDIUM",
-        "powertrain": "ICE / Hybrid",
-        "focus": "كفاءة المحول الحفاز",
-    },
-
-    "P0500": {
-        "title": "إشارة سرعة السيارة غير متاحة",
-        "english": "Vehicle Speed Sensor Malfunction",
-        "system": "Vehicle Speed",
-        "risk": "HIGH",
-        "powertrain": "EV / Hybrid / ICE",
-        "focus": "مصدر سرعة السيارة",
-    },
-
-    "P0A1F": {
-        "title": "عطل في وحدة التحكم بطاقة البطارية",
-        "english": "Battery Energy Control Module",
-        "system": "BMS",
-        "risk": "HIGH",
-        "powertrain": "EV / Hybrid",
-        "focus": "وحدة إدارة البطارية والاتصال معها",
-    },
-
-    "P0A78": {
-        "title": "أداء دائرة إنفرتر محرك الدفع غير طبيعي",
-        "english": "Drive Motor Inverter Performance",
-        "system": "Inverter",
-        "risk": "CRITICAL",
-        "powertrain": "EV / Hybrid",
-        "focus": "الإنفرتر ومحرك الدفع",
-    },
-
-    "P0A7F": {
-        "title": "تدهور أداء بطارية الجهد العالي",
-        "english": "High Voltage Battery Pack Deterioration",
-        "system": "HV Battery",
-        "risk": "HIGH",
-        "powertrain": "EV / Hybrid",
-        "focus": "حالة بطارية الجهد العالي",
-    },
-
-    "P0A81": {
-        "title": "دائرة مروحة تبريد بطارية الجهد العالي",
-        "english": "Hybrid Battery Cooling Fan Circuit",
-        "system": "Battery Cooling",
-        "risk": "HIGH",
-        "powertrain": "EV / Hybrid",
-        "focus": "تبريد البطارية",
-    },
-
-    "P0A9C": {
-        "title": "حساس حرارة بطارية الجهد العالي",
-        "english": "Hybrid Battery Temperature Sensor",
-        "system": "HV Battery Temperature",
-        "risk": "HIGH",
-        "powertrain": "EV / Hybrid",
-        "focus": "قراءات حرارة البطارية",
-    },
-
-    "P0C73": {
-        "title": "أداء مضخة تبريد الإنفرتر غير طبيعي",
-        "english": "Inverter Cooling Pump Performance",
-        "system": "Cooling",
-        "risk": "HIGH",
-        "powertrain": "EV / Hybrid",
-        "focus": "دورة تبريد الإنفرتر",
-    },
-
-    "P0D01": {
-        "title": "فولتية إدخال شاحن السيارة منخفضة",
-        "english": "On-Board Charger Input Voltage Low",
-        "system": "OBC",
-        "risk": "HIGH",
-        "powertrain": "EV / Hybrid",
-        "focus": "دخل الشحن",
-    },
-
-    # ---------------- U CODES ----------------
-
-    "U0100": {
-        "title": "انقطاع الاتصال مع وحدة التحكم بالمحرك",
-        "english": "Lost Communication With ECM / PCM",
-        "system": "CAN",
-        "risk": "HIGH",
-        "powertrain": "EV / Hybrid / ICE",
-        "focus": "اتصال CAN مع وحدة التحكم",
-    },
-
-    "U0101": {
-        "title": "انقطاع الاتصال مع وحدة ناقل الحركة",
-        "english": "Lost Communication With Transmission Control Module",
-        "system": "CAN",
-        "risk": "HIGH",
-        "powertrain": "EV / Hybrid / ICE",
-        "focus": "اتصال وحدة ناقل الحركة",
-    },
-
-    "U0110": {
-        "title": "انقطاع الاتصال مع وحدة محرك الدفع",
-        "english": "Lost Communication With Drive Motor Control Module",
-        "system": "CAN",
-        "risk": "CRITICAL",
-        "powertrain": "EV / Hybrid",
-        "focus": "اتصال وحدة محرك الدفع",
-    },
-
-    "U0111": {
-        "title": "انقطاع الاتصال مع وحدة إدارة البطارية",
-        "english": "Lost Communication With Battery Energy Control Module",
-        "system": "CAN / BMS",
-        "risk": "CRITICAL",
-        "powertrain": "EV / Hybrid",
-        "focus": "اتصال BMS",
-    },
-
-    "U0121": {
-        "title": "انقطاع الاتصال مع وحدة ABS",
-        "english": "Lost Communication With ABS Control Module",
-        "system": "CAN / ABS",
-        "risk": "CRITICAL",
-        "powertrain": "EV / Hybrid / ICE",
-        "focus": "اتصال ABS",
-    },
-
-    "U0140": {
-        "title": "انقطاع الاتصال مع وحدة التحكم بالهيكل",
-        "english": "Lost Communication With Body Control Module",
-        "system": "CAN / BCM",
-        "risk": "HIGH",
-        "powertrain": "EV / Hybrid / ICE",
-        "focus": "اتصال BCM",
-    },
-
-    "U0155": {
-        "title": "انقطاع الاتصال مع لوحة العدادات",
-        "english": "Lost Communication With Instrument Panel Cluster",
-        "system": "CAN / Cluster",
-        "risk": "MEDIUM",
-        "powertrain": "EV / Hybrid / ICE",
-        "focus": "اتصال لوحة العدادات",
-    },
-
-    # ---------------- C CODES ----------------
-
-    "C1201": {
-        "title": "خلل في نظام التحكم المرتبط بالفرامل",
-        "english": "ABS / Stability Control Related Fault",
-        "system": "ABS / ESC",
-        "risk": "CRITICAL",
-        "powertrain": "EV / Hybrid / ICE",
-        "focus": "نظام ABS و ESC",
-    },
-
-    "C1241": {
-        "title": "جهد تغذية وحدة ABS منخفض",
-        "english": "Low Power Supply Voltage",
-        "system": "ABS Power",
-        "risk": "HIGH",
-        "powertrain": "EV / Hybrid / ICE",
-        "focus": "تغذية وحدة ABS",
-    },
-
-    "C1300": {
-        "title": "عطل داخلي في وحدة ABS",
-        "english": "ABS ECU Internal Malfunction",
-        "system": "ABS ECU",
-        "risk": "CRITICAL",
-        "powertrain": "EV / Hybrid / ICE",
-        "focus": "وحدة ABS",
-    },
-
-    "C1511": {
-        "title": "عطل في حساس عزم المقود",
-        "english": "Steering Torque Sensor",
-        "system": "EPS",
-        "risk": "CRITICAL",
-        "powertrain": "EV / Hybrid / ICE",
-        "focus": "حساس عزم التوجيه",
-    },
-
-    # ---------------- B CODES ----------------
-
-    "B1000": {
-        "title": "عطل داخلي في وحدة الوسائد الهوائية",
-        "english": "Airbag Control Module Internal Fault",
-        "system": "SRS",
-        "risk": "CRITICAL",
-        "powertrain": "EV / Hybrid / ICE",
-        "focus": "SRS / Airbag",
-    },
-
-    "B1211": {
-        "title": "دائرة شداد حزام الأمان مفتوحة",
-        "english": "Seat Belt Pretensioner Circuit Open",
-        "system": "SRS",
-        "risk": "CRITICAL",
-        "powertrain": "EV / Hybrid / ICE",
-        "focus": "شداد حزام الأمان",
-    },
-
-    "B2799": {
-        "title": "خلل في نظام مانع السرقة",
-        "english": "Immobilizer System Malfunction",
-        "system": "Immobilizer",
-        "risk": "HIGH",
-        "powertrain": "EV / Hybrid / ICE",
-        "focus": "مانع السرقة / التعرف على المفتاح",
-    },
-
-    # ---------------- SPECIAL ----------------
-
-    "P0AA6": {
-        "title": "خلل عزل نظام الجهد العالي",
-        "english": "Hybrid / EV Battery Voltage System Isolation Fault",
-        "system": "HV Isolation",
-        "risk": "CRITICAL",
-        "powertrain": "EV / Hybrid",
-        "focus": "عزل دائرة الجهد العالي عن الهيكل",
-    },
-
-    "U0298": {
-        "title": "انقطاع الاتصال مع محول DC-DC",
-        "english": "Lost Communication With DC-DC Converter",
-        "system": "DC-DC",
-        "risk": "HIGH",
-        "powertrain": "EV / Hybrid",
-        "focus": "اتصال وتغذية محول DC-DC",
-    },
-
+codes = {
+    "P0AA6": "HV Isolation Fault",
+    "U0298": "Lost Communication With DC/DC Converter",
+    "P0100": "MAF Circuit",
+    "P0101": "MAF Performance",
+    "P0102": "MAF Low Input",
+    "P0103": "MAF High Input",
+    "U0100": "Lost Communication With ECM",
+    "U0101": "Lost Communication With TCM",
+    "U0110": "Lost Communication With Drive Motor",
+    "U0111": "Lost Communication With BMS",
+    "U0121": "Lost Communication With ABS",
+    "U0140": "Lost Communication With BCM",
+    "C1201": "ABS / Stability Control",
+    "C1241": "ABS Low Voltage",
+    "B1000": "Airbag ECU Fault",
+    "B1211": "Seat Belt Circuit",
+    "B2799": "Immobilizer System"
 }
 
 
-# =========================================================
-# DIAGNOSTIC FLOW ENGINE
-# =========================================================
+# ═══════════════════════════════════════════════
+# اختيار الكود
+# ═══════════════════════════════════════════════
 
-def node(
-    question_ar,
-    question_en,
-    options
-):
-    return {
-        "question_ar": question_ar,
-        "question_en": question_en,
-        "options": options
-    }
+st.header("🔎 تشخيص العطل")
 
+search = st.text_input(
+    "اكتب كود العطل:",
+    placeholder="مثال: P0AA6"
+).strip().upper()
 
-def option(
-    label_ar,
-    label_en,
-    next_step=None,
-    result=None,
-    severity="normal"
-):
-    return {
-        "label_ar": label_ar,
-        "label_en": label_en,
-        "next": next_step,
-        "result": result,
-        "severity": severity
-    }
+if search:
+
+    if search in codes:
+        st.markdown("---")
+        diagnose(search)
+    else:
+        st.warning(
+            f"الكود {search} غير موجود حالياً في قاعدة البيانات."
+        )
+        st.info(
+            "يمكن إضافة مسار تشخيص مستقل لهذا الكود داخل diagnose()."
+        )
+
+else:
+    st.info("👆 اكتب كود DTC للبدء بالتشخيص التفاعلي.")
 
 
-# =========================================================
-# SPECIAL FLOW: P0AA6
-# =========================================================
+# ═══════════════════════════════════════════════
+# حاسبة المسافة
+# ═══════════════════════════════════════════════
 
-def flow_p0aa6():
+with st.expander("📊 حاسبة التوفير"):
 
-    return {
+    col1, col2 = st.columns(2)
 
-        "start": node(
-            "هل الكود P0AA6 موجود حالياً كـ Active / Current وليس مجرد تاريخي؟",
-            "Is P0AA6 currently Active / Current rather than History / Stored?",
-            [
-                option(
-                    "نعم، Active / Current",
-                    "YES — Active / Current",
-                    "hv_water",
-                    severity="danger"
-                ),
-                option(
-                    "لا، History / Stored فقط",
-                    "NO — History / Stored only",
-                    "hv_history"
-                ),
-                option(
-                    "لا أعرف",
-                    "I DON'T KNOW",
-                    "hv_confirm"
-                )
-            ]
-        ),
+    with col1:
+        prev = st.number_input(
+            "العداد السابق",
+            value=10000,
+            step=100
+        )
 
-        "hv_confirm": node(
-            "أعد فحص السيارة بجهاز تشخيص يدعم وحدة HV/BMS واقرأ جميع الأكواد المرتبطة، وليس P0AA6 فقط
+    with col2:
+        curr = st.number_input(
+            "العداد الحالي",
+            value=11500,
+            step=100
+        )
+
+    if curr > prev:
+        km = curr - prev
+        gasoline = (km / 10) * 1000
+        ev = (km / 6) * 50
+        saving = gasoline - ev
+
+        st.success(
+            f"💰 التوفير: {int(saving):,} د.ع لمسافة {km:,} كم"
+        )
+
+
+st.markdown("---")
+st.caption("BYD Iraq Team ❤️ | Interactive Workshop")
