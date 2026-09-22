@@ -293,4 +293,70 @@ with c:
         "💬 WhatsApp",
         "رابط_الواتساب",
         use_container_width=True
+
+
+        # =========================================================
+# 🚗 المرحلة 3 — سيارات BYD
+# =========================================================
+
+MODELS={
+"BYD ATTO 3":       {"type":"EV","battery":"—","range":"—","charge":"—"},
+"BYD SEAL":         {"type":"EV","battery":"—","range":"—","charge":"—"},
+"BYD HAN":          {"type":"EV","battery":"—","range":"—","charge":"—"},
+"BYD SEALION 7":    {"type":"EV","battery":"—","range":"—","charge":"—"},
+"BYD SHARK 6":      {"type":"PHEV","battery":"—","range":"—","charge":"—"},
+"BYD SEAL 7 DM-i":  {"type":"PHEV","battery":"—","range":"—","charge":"—"},
+"BYD QIN PLUS DM-i":{"type":"PHEV","battery":"—","range":"—","charge":"—"},
+"BYD SONG PLUS DM-i":{"type":"PHEV","battery":"—","range":"—","charge":"—"}
+}
+
+with st.expander("🚗 معلومات سيارات BYD",expanded=False):
+
+    model=st.selectbox(
+        "اختر الموديل:",
+        ["اختار الموديل..."]+list(MODELS)
+    )
+
+    if model!="اختار الموديل...":
+
+        x=MODELS[model]
+
+        st.markdown(f"## 🚗 {model}")
+
+        a,b=st.columns(2)
+
+        with a:
+            st.info(f"⚡ **النظام:** {x['type']}")
+            st.info(f"🔋 **البطارية:** {x['battery']}")
+
+        with b:
+            st.info(f"🛣️ **المدى:** {x['range']}")
+            st.info(f"⚡ **الشحن:** {x['charge']}")
+
+        st.markdown("---")
+
+        st.markdown("### 🔋 البطارية")
+        st.write(
+            "نوع البطارية وسعتها ومعلوماتها التفصيلية تعتمد على "
+            "السنة والفئة والسوق، لذلك تُملأ من مواصفات الموديل المعتمد."
+        )
+
+        st.markdown("### ⚡ الشحن")
+        st.write(
+            "تختلف قدرة الشحن ووقت الشحن حسب الفئة والشاحن "
+            "ودرجة الحرارة وحالة البطارية."
+        )
+
+        st.markdown("### 🔌 نظام 12V")
+        st.write(
+            "بطارية 12V مسؤولة عن الأنظمة منخفضة الجهد، "
+            "وتفاصيلها تختلف حسب الموديل والفئة."
+        )
+
+        st.markdown("### ⚠️ نظام HV")
+        st.warning(
+            "منظومة الجهد العالي تتطلب إجراءات السلامة ومواصفات "
+            "BYD الخاصة بالموديل. لا يتم التعامل مع مكونات HV "
+            "المكشوفة بدون تدريب وتجهيز مناسب."
+        )
     )
