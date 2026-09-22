@@ -297,66 +297,7 @@ with c:
 
 
 
-# 🚗 معلومات السيارة
-def get_car(name):
-    try:
-        r=requests.get(
-            "https://en.wikipedia.org/w/api.php",
-            params={
-                "action":"query",
-                "list":"search",
-                "srsearch":name,
-                "format":"json",
-                "srlimit":5
-            },
-            headers={"User-Agent":"BYD-Iraq-Workshop/1.0"},
-            timeout=10
-        )
-
-        hits=r.json().get("query",{}).get("search",[])
-        if not hits:
-            return None
-
-        title=hits[0]["title"]
-
-        r=requests.get(
-            "https://en.wikipedia.org/w/api.php",
-            params={
-                "action":"query",
-                "prop":"revisions",
-                "rvprop":"content",
-                "rvslots":"main",
-                "titles":title,
-                "format":"json",
-                "formatversion":2
-            },
-            headers={"User-Agent":"BYD-Iraq-Workshop/1.0"},
-            timeout=10
-        )
-
-        pages=r.json().get("query",{}).get("pages",[])
-        if not pages:
-            return None
-
-        text=pages[0]["revisions"][0]["slots"]["main"]["content"]
-
-        def find(p):
-            m=re.search(p,text,re.I)
-            return m.group(1).strip() if m else "غير متوفر"
-
-        return {
-            "name":title,
-            "battery":find(r"\|\s*battery\s*=\s*([^\n]+)"),
-            "range":find(r"\|\s*range\s*=\s*([^\n]+)"),
-            "power":find(r"\|\s*power\s*=\s*([^\n]+)"),
-            "motor":find(r"\|\s*motor\s*=\s*([^\n]+)"),
-            "weight":find(r"\|\s*weight\s*=\s*([^\n]+)"),
-            "url":"https://en.wikipedia.org/wiki/"+title.replace(" ","_")
-        }
-
-    except:
-        return None
-
+# 🚗 معلومات السيار
 
 with st.expander("🚗 معلومات السيارة",expanded=False):
 
@@ -440,4 +381,159 @@ with st.expander("🚗 معلومات السيارة",expanded=False):
                 st.error(
                     "❌ ما حصلنا معلومات للسيارة. "
                     "جرّب مثلاً: BYD Seal"
+                )
+
+# =========================
+# 🚗 STAGE 3 — معلومات السيارة
+# =========================
+
+BYD_PAGES={
+    "atto 3":"https://www.byd.com/iq/car/atto3",
+    "atto3":"https://www.byd.com/iq/car/atto3",
+    "seal":"https://www.byd.com/iq/car/seal",
+    "sealion 7":"https://www.byd.com/iq/car/sealion-7",
+    "sealion7":"https://www.byd.com/iq/car/sealion-7",
+    "han":"https://www.byd.com/iq/car/han",
+    "shark 6":"https://www.byd.com/iq/car/shark-6",
+    "shark6":"https://www.byd.com/iq/car/shark-6",
+    "seal 7 dm-i":"https://www.byd.com/iq/car/seal-7-dm-i",
+    "qin plus dm-i":"https://www.byd.com/iq/car/qin-plus-dm-i",
+    "song plus dm-i":"https://www.byd.com/iq/car/song-plus-dm-i"
+}
+
+def car_page(name):
+    n=name.lower().strip()
+
+    for k,u in BYD_PAGES.items():
+        if k in n:
+            return u
+
+    return None
+
+
+def read_car(name):
+    u=car_page(name)
+
+    if not u:
+        return None
+
+    try:
+        r=requests.get(
+            u,
+            headers={"User-Agent":"Mozilla/5.0"},
+            timeout=15
+        )
+
+        if r.status_code!=200:
+            return None
+
+        t=re.sub(r"<[^>]+>"," ",r.text)
+        t=re.sub(r"\s+"," ",t)
+
+        def get(pattern):
+            m=re.search(pattern,t,re.I)
+            return m.group(1).strip() if m else "غير مذكور"
+
+        return {
+            "url":u,
+            "battery":get(r"battery.{0,150}?(\d+(?:\.\d+)?\s*kWh)"),
+            "range":get(r"(?:range|driving range).{0,100}?(\d+\s*km)"),
+            "power":get(r"(?:power|motor).{0,100}?(\d+\s*kW)"),
+            "charge":get(r"(?:DC|charging capacity).{0,100}?(\d+\s*kW)"),
+            "zero":get(r"(?:0-100|0 to 100).{0,80}?(\d+(?:\.\d+)?\s*seconds?)"),
+            "type":"EV / حسب الفئة",
+        }
+
+    except:
+        return None
+
+
+with st.expander("🚗 معلومات السيارة",expanded=False):
+
+    st.markdown("### 🔎 ابحث عن سيارة BYD")
+
+    model=st.text_input(
+        "اكتب اسم السيارة:",
+        placeholder="مثال: BYD Seal أو BYD ATTO 3"
+    ).strip()
+
+    if st.button(
+        "🔍 جلب مواصفات السيارة",
+        use_container_width=True,
+        type="primary"
+    ):
+
+        if not model:
+            st.warning("⚠️ اكتب اسم السيارة أولاً.")
+
+        else:
+
+            with st.spinner("🌐 جاري جلب بيانات BYD الرسمية..."):
+                car=read_car(model)
+
+            if car:
+
+                st.success("✅ تم العثور على صفحة BYD الرسمية")
+
+                st.markdown(f"## 🚗 {model.upper()}")
+
+                a,b=st.columns(2)
+
+                with a:
+                    st.info(f"⚡ **النظام:** {car['type']}")
+                    st.info(f"🔋 **البطارية:** {car['battery']}")
+                    st.info(f"🛣️ **المدى:** {car['range']}")
+
+                with b:
+                    st.info(f"⚡ **الشحن:** {car['charge']}")
+                    st.info(f"🏎️ **القوة:** {car['power']}")
+                    st.info(f"🚀 **0–100:** {car['zero']}")
+
+                st.markdown("---")
+
+                st.markdown("### 🔋 البطارية")
+                st.write(car["battery"])
+
+                st.markdown("### ⚡ الشحن")
+                st.write(car["charge"])
+
+                st.markdown("### 🛣️ المدى")
+                st.write(car["range"])
+
+                st.markdown("### 🏎️ الأداء")
+                st.write(
+                    f"القوة: {car['power']}  \n"
+                    f"0–100 كم/س: {car['zero']}"
+                )
+
+                st.markdown("### 🔌 نظام 12V")
+                st.info(
+                    "تفاصيل بطارية 12V تختلف حسب الفئة والسوق، "
+                    "ولم يتم عرضها إذا لم تكن مذكورة في الصفحة الرسمية."
+                )
+
+                st.markdown("### ⚠️ نظام HV")
+                st.warning(
+                    "معلومات HV العامة لا تُستخدم كإجراء صيانة. "
+                    "أي فحص أو فصل لمنظومة الجهد العالي يجب أن يتم "
+                    "حسب إجراء BYD وتجهيزات السلامة الخاصة بالموديل."
+                )
+
+                st.markdown("### 🌐 المصدر الرسمي")
+
+                st.link_button(
+                    "فتح صفحة BYD",
+                    car["url"],
+                    use_container_width=True
+                )
+
+            else:
+
+                st.error(
+                    "❌ ما لقيت صفحة BYD لهذا الاسم."
+                )
+
+                st.caption(
+                    "جرّب اسم أحد الموديلات المدعومة مثل: "
+                    "BYD Seal أو BYD ATTO 3 أو BYD SEALION 7"
                 )
