@@ -296,7 +296,7 @@ with c:
     )
 
 
-
+with st.expander("🚗 معلومات السيارة"
 # 🚗 بحث معلومات السيارة
 def get_car(name):
     try:
