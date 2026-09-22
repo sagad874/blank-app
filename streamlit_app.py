@@ -272,17 +272,25 @@ with st.expander("📊 حاسبة التوفير"):
     elif new<old:
         st.warning("⚠️ القراءة الحالية أقل من السابقة.")
 
-st.markdown("### 📱 تواصل معنا")
-
-a,b=st.columns(2)
+a,b,c=st.columns(3)
 
 with a:
-    st.link_button("🎵 TikTok","https://www.tiktok.com/@iraq_byd?_r=1&_t=ZS-99vriy2B3wd",use_container_width=True)
+    st.link_button(
+        "🎵 TikTok",
+        "https://www.tiktok.com/@iraq_byd?_r=1&_t=ZS-99vriy2B3wd",
+        use_container_width=True
+    )
 
 with b:
-    st.link_button("💬 WhatsApp","رابط_الواتساب",use_container_width=True)
+    st.link_button(
+        "📘 Facebook",
+        "https://www.facebook.com/share/1Ps1RPakdP/",
+        use_container_width=True
+    )
 
-
-    with c:
-st.link_button("📘 Facebook","https://www.facebook.com/share/1Ps1RPakdP/",use_container_width=True)
-    
+with c:
+    st.link_button(
+        "💬 WhatsApp",
+        "رابط_الواتساب",
+        use_container_width=True
+    )
