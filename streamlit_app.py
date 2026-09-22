@@ -271,3 +271,14 @@ with st.expander("📊 حاسبة التوفير"):
         st.success(f"💰 التوفير لـ {km:,} كم: {int(gas-ev):,} دينار")
     elif new<old:
         st.warning("⚠️ القراءة الحالية أقل من السابقة.")
+
+st.markdown("### 📱 تواصل معنا")
+
+a,b=st.columns(2)
+
+with a:
+    st.link_button("🎵 TikTok","رابط_التك_توك",use_container_width=True)
+
+with b:
+    st.link_button("💬 WhatsApp","رابط_الواتساب",use_container_width=True)
+    
